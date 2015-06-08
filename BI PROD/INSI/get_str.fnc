@@ -1,0 +1,12 @@
+CREATE OR REPLACE FUNCTION GET_STR
+(
+  str VARCHAR2
+ ,i   NUMBER
+ ,j   NUMBER
+) RETURN VARCHAR2 IS
+  ret VARCHAR2(1000);
+BEGIN
+  ret := SUBSTR(str, i, j);
+  RETURN ret;
+END;
+/

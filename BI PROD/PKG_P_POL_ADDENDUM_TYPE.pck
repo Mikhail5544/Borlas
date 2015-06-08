@@ -1,0 +1,101 @@
+CREATE OR REPLACE PACKAGE PKG_P_POL_ADDENDUM_TYPE IS
+
+  TYPE T_RESULTSET IS TABLE OF VEN_P_POL_ADDENDUM_TYPE%ROWTYPE INDEX BY BINARY_INTEGER;
+
+  FUNCTION NEW_POLICY_IS_ADD_TYPE
+  (
+    p_policy   PLS_INTEGER
+   ,p_add_type PLS_INTEGER
+  ) RETURN PLS_INTEGER;
+  PROCEDURE NEW_P_POL_ADDENDUM_TYPE(P_RESULTSET T_RESULTSET);
+  PROCEDURE CREATE_POL_ADDENDUM_TYPE
+  (
+    p_p_policy_id      IN NUMBER
+   ,p_policy_source_id IN NUMBER
+  );
+
+END;
+/
+CREATE OR REPLACE PACKAGE BODY PKG_P_POL_ADDENDUM_TYPE IS
+  RESULTSET       T_RESULTSET;
+  RESULTSET_CLEAR T_RESULTSET;
+
+  P_DEBUG BOOLEAN DEFAULT TRUE;
+
+  PROCEDURE LOG
+  (
+    p_p_policy_id IN NUMBER
+   ,p_message     IN VARCHAR2
+  ) IS
+    PRAGMA AUTONOMOUS_TRANSACTION;
+  BEGIN
+    IF P_DEBUG
+    THEN
+      INSERT INTO P_POLICY_DEBUG
+        (P_POLICY_ID, execution_date, operation_type, debug_message)
+      VALUES
+        (p_p_policy_id, SYSDATE, 'INS.PKG_P_POL_ADDENDUM_TYPE', SUBSTR(p_message, 1, 4000));
+    END IF;
+  
+    COMMIT;
+  
+  EXCEPTION
+    WHEN OTHERS THEN
+      NULL;
+  END;
+
+  PROCEDURE NEW_P_POL_ADDENDUM_TYPE(P_RESULTSET T_RESULTSET) IS
+  BEGIN
+    RESULTSET := P_RESULTSET;
+  END;
+
+  FUNCTION NEW_POLICY_IS_ADD_TYPE
+  (
+    p_policy   PLS_INTEGER
+   ,p_add_type PLS_INTEGER
+  ) RETURN PLS_INTEGER IS
+  BEGIN
+    FOR i IN 1 .. RESULTSET.COUNT
+    LOOP
+    
+      IF RESULTSET(i).p_policy_id = p_policy
+          AND RESULTSET(i).T_ADDENDUM_TYPE_ID = p_add_type
+      THEN
+        RETURN 1;
+      END IF;
+    
+    END LOOP;
+  
+    RETURN 0;
+  
+  END;
+
+  PROCEDURE CREATE_POL_ADDENDUM_TYPE
+  (
+    p_p_policy_id      IN NUMBER
+   ,p_policy_source_id IN NUMBER
+  ) IS
+  BEGIN
+    FOR i IN 1 .. RESULTSET.count
+    LOOP
+      IF p_policy_source_id = RESULTSET(i).p_policy_id
+      THEN
+        LOG(p_policy_source_id
+           , 'Создание записи с информацией о типе изменений T_ADDENDUM_TYPE_ID ' || RESULTSET(i)
+            .T_ADDENDUM_TYPE_ID);
+        INSERT INTO VEN_P_POL_ADDENDUM_TYPE
+          (P_POL_ADDENDUM_TYPE_ID, ENT_ID, FILIAL_ID, EXT_ID, P_POLICY_ID, T_ADDENDUM_TYPE_ID)
+        VALUES
+          (RESULTSET(i).P_POL_ADDENDUM_TYPE_ID
+          ,RESULTSET(i).ENT_ID
+          ,RESULTSET(i).FILIAL_ID
+          ,RESULTSET(i).EXT_ID
+          ,P_P_POLICY_ID
+          ,RESULTSET(i).T_ADDENDUM_TYPE_ID);
+      END IF;
+    END LOOP;
+    RESULTSET := RESULTSET_CLEAR;
+  END;
+
+END;
+/

@@ -1,0 +1,5 @@
+CREATE OR REPLACE PROCEDURE AAA() IS
+BEGIN
+  SELECT PKG_GATE.InserEvent('MSSQL.sp_process_import', 0) FROM dual;
+END;
+/
