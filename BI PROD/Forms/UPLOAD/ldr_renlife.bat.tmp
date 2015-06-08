@@ -1,4 +1,0 @@
-export ORACLE_HOME=/oracle/opt_app/BINS11_PROD/AS
-export ORACLE_SID=binsprod
-export NLS_LANG=RUSSIAN_CIS.CL8MSWIN1251
-/oracle/opt_app/BINS11_PROD/AS/bin/sqlldr userid=ins/BycYtLjcnegty56@binsprod  control=$1 data=$2 log=$2.log
